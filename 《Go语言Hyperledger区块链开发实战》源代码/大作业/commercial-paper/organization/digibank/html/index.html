@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>银行DigiBank管理员页面</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js">
+    </script>
+    <script>
+        $(document).ready(function () {
+            $(".formbuy").hide();
+            $(".formredeem").hide();
+            //单击“首页”超链接
+            $("#home").click(function () {
+                $(".content").show();
+                $(".formbuy").hide();
+                $(".formredeem").hide();
+            });
+            // 初始化日期输入框为今天
+            var strdate = getDateTime("");
+            $("#purchaseDateTime").val(strdate);//设置购买日为当前日期
+            $("#redeenDateTime").val(strdate);//设置兑换日为当前日期
+            // 添加身份到钱包
+            $("#add_to_wallet").click(function () {
+                $.ajax({
+                    type: "GET",
+                    url: "http://192.168.1.111:8081/add_to_wallet",
+                    success: function (data) {
+                        if (data.errcode == 0) {
+                            alert("操作成功");
+                        } else {
+                            alert(data.message);
+                        }
+                    }
+                });
+            });
+            // 点击“购买商业票据”链接
+            $("#buy").click(function () {
+                $(".content").hide();
+                $(".formredeem").hide();
+                $(".formbuy").show();
+            });
+            // 点击“兑换商业票据”链接
+            $("#redeem").click(function () {
+                $(".content").hide();
+                $(".formredeem").show();
+                $(".formbuy").hide();
+            });
+            //点击购买商业票据的提交按钮
+            $("#submit_buy").click(function () {
+                var issuer = $("#issuer").val();
+                var papernumber = $("#papernumber").val();
+                var currentOwner = $("#currentOwner").val();
+                var newOwner = $("#newOwner").val();
+                var price = $("#price").val();
+                var purchaseDateTime = $("#purchaseDateTime").val();
+
+                if (issuer == "") {
+                    alert("请输入发行者");
+                    resurn;
+                }
+                if (papernumber == "") {
+                    alert("请输入商业票据编号");
+                    resurn;
+                }
+                if (currentOwner == "") {
+                    alert("请输入当前所有者");
+                    resurn;
+                }
+                if (newOwner == "") {
+                    alert("请输入买入者");
+                    resurn;
+                }
+                if (price == "") {
+                    alert("请输入买入价格");
+                    resurn;
+                }
+                if (purchaseDateTime == "") {
+                    alert("请输入买入日期");
+                    resurn;
+                }
+
+                $.ajax({
+                    type: "GET",
+                    url: "http://192.168.1.111:8081/buy",
+                    data: {
+                        "issuer": issuer,
+                        "papernumber": papernumber,
+                        "currentOwner": currentOwner,
+                        "newOwner": newOwner,
+                        "price": price,
+                        "purchaseDateTime": purchaseDateTime
+                    },
+                    dataType: "json",
+                    success: function (data) {
+                        //bj = $.parseJSON(data);
+                        if (data.errcode == 0) {
+                            alert("操作成功");
+                        } else {
+                            alert(data.message);
+                        }
+                    }
+                });
+            });
+
+            //点击兑换商业票据的提交按钮
+            $("#submit_redeem").click(function () {
+                var issuer = $("#issuer1").val();
+                var papernumber = $("#papernumber1").val();
+                var redeemingOwner = $("#redeemingOwner").val();
+                var redeenDateTime = $("#redeenDateTime").val();
+                alert(issuer)
+                if (issuer == "") {
+                    alert("请输入发行者");
+                    return;
+                }
+                if (papernumber == "") {
+                    alert("请输入商业票据编号");
+                    resurn;
+                }
+                if (redeemingOwner == "") {
+                    alert("请输入兑换者");
+                    resurn;
+                }
+                if (redeenDateTime == "") {
+                    alert("请输入兑换日期");
+                    resurn;
+                }
+                var mydate = new Date();
+                var strdate = "" + (mydate.getFullYear() + 1) + "年";
+                strdate += (mydate.getMonth() + 1) + "月";
+                strdate += mydate.getDate() + "日";
+
+                $.ajax({
+                    type: "GET",
+                    url: "http://192.168.1.111:8081/redeem",
+                    data: {
+                        "issuer": issuer,
+                        "paperNumber": papernumber,
+                        "redeemingOwner": redeemingOwner,
+                        "redeenDateTime": redeenDateTime
+                    },
+                    dataType: "json",
+                    success: function (data) {
+                        //bj = $.parseJSON(data);
+                        if (data.errcode == 0) {
+                            alert("操作成功");
+                        } else {
+                            alert(data.message);
+                        }
+                    }
+                });
+            });
+        });
+
+        function getDateTime(type) {
+            var date = new Date();
+            var hengGang = "-";
+            var maoHao = ":";
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1;
+            var curDate = date.getDate();
+            var curHours = date.getHours();
+            var curMinutes = date.getMinutes();
+            var curSeconds = date.getSeconds();
+
+            if (month >= 1 && month <= 9) {
+                month = "0" + month;
+            }
+            if (curDate >= 0 && curDate <= 9) {
+                curDate = "0" + curDate;
+            }
+            if (curHours >= 0 && curHours <= 9) {
+                curHours = "0" + curHours;
+            }
+            if (curMinutes >= 0 && curMinutes <= 9) {
+                curMinutes = "0" + curMinutes;
+            }
+            if (curSeconds >= 0 && curSeconds <= 9) {
+                curSeconds = "0" + curSeconds;
+            }
+            var currentdate = "";
+            if (type == "year") {
+                currentdate = year;
+                return currentdate;
+            } else if (type == "month") {
+                currentdate = year + hengGang + month;
+                return currentdate;
+            } else {
+                currentdate = year + hengGang + month + hengGang + curDate + " " + curHours + maoHao + curMinutes + maoHao + curSeconds;
+                return currentdate;
+            }
+        }
+    </script>
+
+
+    </script>
+
+</head>
+<body>
+<div class="nav">
+    <div class="navleft">
+        <a id="home">首页</a>
+        <a id="add_to_wallet">添加身份信息到钱包</a>
+        <a id="buy">购买商业票据</a>
+        <a id="redeem">兑换商业票据</a>
+    </div>
+    <div class="navright">
+        <a href="#">设置</a>
+        <a href="#" id="login">登录</a>
+    </div>
+    <div class="clear"></div>
+</div>
+<div class="main">
+    <div class="pic">
+        <h2>基于Fabric网络的商业票据实例开发</h2><br><br>
+        <h3>银行DigiBank管理页面</h3>
+    </div>
+    <div class="content">
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在fabric-samples目录下包含一个commercial-paper示例项目。这是一个简易的由银行向企业开出商业票据的应用。本章会对此实例的智能合约代码进行解析，并在此项目的基础上开发Go语言版本的客户端应用和前端程序使读者了解Fabric区块链应用程序的完整开发流程。<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了便于用户使用本章实例，本实例中包含了银行DigiBank和企业MagnetoCorp前端页面。因为前端开发并不是本书关注的主题，所以本实例中的前端页面功能和架构都比较简单。
+    </div>
+    <div class="formbuy">
+        <h4>购买商业票据</h4>
+        <p>
+            <label for="issuer">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;发行者：</label>
+            <input type="text" name="issuer" id="issuer"/></br>
+            <label for="papernumber">商业票据编号：</label>
+            <input type="text" name="papernumber" id="papernumber"/> </br>
+            <label for="currentOwner">&nbsp;&nbsp;&nbsp;当前所有者：</label>
+            <input type="text" name="currentOwner" id="currentOwner"/> </br>
+            <label for="newOwner">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;买入者：</label>
+            <input type="text" name="newOwner" id="newOwner"/></br>
+            <label for="price">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;买入价格：</label>
+            <input type="text" name="price" id="price"/> </br>
+            <label for="purchaseDateTime">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;买入日期：</label>
+            <input type="text" name="purchaseDateTime" id="purchaseDateTime"/> </br></br>
+            <button id="submit_buy">提交</button>
+    </div>
+    <div class="formredeem">
+        <h4>兑换商业票据</h4>
+        <p>
+            <label for="issuer1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;发行者：</label>
+            <input type="text" name="issuer1" id="issuer1"/></br>
+            <label for="papernumber">商业票据编号：</label>
+            <input type="text" name="papernumber1" id="papernumber1"/> </br>
+            <label for="redeemingOwner">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;兑换者：</label>
+            <input type="text" name="redeemingOwner" id="redeemingOwner"/> </br>
+            <label for="redeenDateTime">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;兑换日期：</label>
+            <input type="text" name="redeenDateTime" id="redeenDateTime"/> </br></br>
+            <button id="submit_redeem">提交</button>
+    </div>
+</div>
+<div class="foot">
+    <a href="#">本实例基于Fabric官方示例commercial_paper</a>
+</div>
+</body>
+</html>
+

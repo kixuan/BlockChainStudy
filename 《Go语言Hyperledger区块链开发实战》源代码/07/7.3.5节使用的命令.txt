@@ -1,0 +1,4 @@
+#使用配置文件docker-compose-up.yaml启动Docker容器。
+
+docker-compose -f /root/fabric_cluster/docker-compose/docker-compose-up.yaml up -d
+

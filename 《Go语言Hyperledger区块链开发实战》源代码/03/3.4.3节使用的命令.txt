@@ -1,0 +1,2 @@
+cd $GOPATH/src/github.com/hyperledger/fabric/scripts/fabric-samples/test-network
+./network.sh createChannel

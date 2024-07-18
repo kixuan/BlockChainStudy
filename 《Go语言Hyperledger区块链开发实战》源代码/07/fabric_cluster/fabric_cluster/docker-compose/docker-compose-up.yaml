@@ -1,0 +1,223 @@
+version: '2'
+
+services:
+  orderer0.consortiums.com:
+    container_name: orderer0.consortiums.com  #容器名
+    extends: #引入base.yaml中定义的配置项
+      file: base.yaml
+      service: order-base
+    volumes: #定义宿主机文件夹到容器中卷的映射关系
+      - /root/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer0.consortiums.com/msp:/var/hyperledger/orderer/msp
+      - /root/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer0.consortiums.com/tls/:/var/hyperledger/orderer/tls
+    ports: # 定义宿主机端和容器中端口的映射关系
+      - 7050:7050
+  orderer1.consortiums.com:
+    container_name: orderer1.consortiums.com
+    extends:
+      file: base.yaml
+      service: order-base
+    volumes:
+      - /root/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer1.consortiums.com/msp:/var/hyperledger/orderer/msp
+      - /root/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer1.consortiums.com/tls/:/var/hyperledger/orderer/tls
+    ports:
+      - 8050:7050
+  orderer2.consortiums.com:
+    container_name: orderer2.consortiums.com
+    extends:
+      file: base.yaml
+      service: order-base
+    volumes:
+      - /root/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer2.consortiums.com/msp:/var/hyperledger/orderer/msp
+      - /root/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer2.consortiums.com/tls/:/var/hyperledger/orderer/tls
+    ports:
+      - 9050:7050
+  orderer3.consortiums.com:
+    container_name: orderer3.consortiums.com
+    extends:
+      file: base.yaml
+      service: order-base
+    volumes:
+      - /root/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer3.consortiums.com/msp:/var/hyperledger/orderer/msp
+      - /root/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer3.consortiums.com/tls/:/var/hyperledger/orderer/tls
+    ports:
+      - 10050:7050
+  orderer4.consortiums.com:
+    container_name: orderer4.consortiums.com
+    extends:
+      file: base.yaml
+      service: order-base
+    volumes:
+      - /root/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer4.consortiums.com/msp:/var/hyperledger/orderer/msp
+      - /root/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer4.consortiums.com/tls/:/var/hyperledger/orderer/tls
+    ports:
+      - 11050:7050
+
+  peer0.org1.com:
+    container_name: peer0.org1.com
+    extends:
+      file: base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.org1.com #Peer节点实例的标识ID
+      - CORE_PEER_ADDRESS=peer0.org1.com:7051 #Peer节点的P2P连接地址
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051 #Peer节点的监听地址
+      - CORE_PEER_CHAINCODEADDRESS=peer0.org1.com:7052 #链码连接该Peer节点的地址
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052 # Peer节点监听链码连接请求的地址
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.org1.com:8051 #初始化gossip的引导节点列表
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.com:7051#向组织外节点发布的访问端点
+      - CORE_PEER_LOCALMSPID=Org1MSP #本地MSP的标识ID
+    volumes: #定义宿主机文件夹到容器中卷的映射关系
+      - /root/fabric_cluster/crypto-config/peerOrganizations/org1.com/peers/peer0.org1.com/msp:/etc/hyperledger/fabric/msp
+      - /root/fabric_cluster/crypto-config/peerOrganizations/org1.com/peers/peer0.org1.com/tls:/etc/hyperledger/fabric/tls
+    ports:
+      - 7051:7051
+  peer1.org1.com:
+    container_name: peer1.org1.com
+    extends:
+      file: base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer1.org1.com
+      - CORE_PEER_ADDRESS=peer1.org1.com:8051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:8051
+      - CORE_PEER_CHAINCODEADDRESS=peer1.org1.com:8052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:8052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org1.com:8051
+      - CORE_PEER_LOCALMSPID=Org1MSP
+    volumes:
+      - /root/fabric_cluster/crypto-config/peerOrganizations/org1.com/peers/peer1.org1.com/msp:/etc/hyperledger/fabric/msp
+      - /root/fabric_cluster/crypto-config/peerOrganizations/org1.com/peers/peer1.org1.com/tls:/etc/hyperledger/fabric/tls
+    ports:
+      - 8051:8051
+
+  peer0.org2.com:
+    container_name: peer0.org2.com
+    extends:
+      file: base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.org2.com
+      - CORE_PEER_ADDRESS=peer0.org2.com:9051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.org2.com:9052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.org2.com:10051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org2.com:9051
+      - CORE_PEER_LOCALMSPID=Org2MSP
+    volumes:
+      - /root/fabric_cluster/crypto-config/peerOrganizations/org2.com/peers/peer0.org2.com/msp:/etc/hyperledger/fabric/msp
+      - /root/fabric_cluster/crypto-config/peerOrganizations/org2.com/peers/peer0.org2.com/tls:/etc/hyperledger/fabric/tls
+    ports:
+      - 9051:9051
+
+
+  peer1.org2.com:
+    container_name: peer1.org2.com
+    extends:
+      file: base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer1.org2.com
+      - CORE_PEER_ADDRESS=peer1.org2.com:10051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:10051
+      - CORE_PEER_CHAINCODEADDRESS=peer1.org2.com:10052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:10052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org2.com:9051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org2.com:10051
+      - CORE_PEER_LOCALMSPID=Org2MSP
+    volumes:
+      - /root/fabric_cluster/crypto-config/peerOrganizations/org2.com/peers/peer1.org2.com/msp:/etc/hyperledger/fabric/msp
+      - /root/fabric_cluster/crypto-config/peerOrganizations/org2.com/peers/peer1.org2.com/tls:/etc/hyperledger/fabric/tls
+    ports:
+      - 10051:10051
+
+  cli-peer0-org1:
+    container_name: cli-peer0-org1
+    extends:
+      file: base.yaml
+      service: cli-base
+    environment:
+      - CORE_PEER_ID=cli-peer0-org1
+      - CORE_PEER_ADDRESS=peer0.org1.com:7051
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_PEER_TLS_CERT_FILE=/hyperledger/opt/peer/crypto-config/peerOrganizations/org1.com/peers/peer0.org1.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/hyperledger/opt/peer/crypto-config/peerOrganizations/org1.com/peers/peer0.org1.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/hyperledger/opt/peer/crypto-config/peerOrganizations/org1.com/peers/peer0.org1.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/hyperledger/opt/peer/crypto-config/peerOrganizations/org1.com/users/Admin@org1.com/msp
+
+  cli-peer1-org1:
+    container_name: cli-peer1-org1
+    extends:
+      file: base.yaml
+      service: cli-base
+    environment:
+      - CORE_PEER_ID=cli-peer1-org1
+      - CORE_PEER_ADDRESS=peer1.org1.com:8051
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_PEER_TLS_CERT_FILE=/hyperledger/opt/peer/crypto-config/peerOrganizations/org1.com/peers/peer1.org1.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/hyperledger/opt/peer/crypto-config/peerOrganizations/org1.com/peers/peer1.org1.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/hyperledger/opt/peer/crypto-config/peerOrganizations/org1.com/peers/peer1.org1.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/hyperledger/opt/peer/crypto-config/peerOrganizations/org1.com/users/Admin@org1.com/msp
+
+  cli-peer0-org2:
+    container_name: cli-peer0-org2
+    extends:
+      file: base.yaml
+      service: cli-base
+    environment:
+      - CORE_PEER_ID=cli-peer0-org2
+      - CORE_PEER_ADDRESS=peer0.org2.com:9051
+      - CORE_PEER_LOCALMSPID=Org2MSP
+      - CORE_PEER_TLS_CERT_FILE=/hyperledger/opt/peer/crypto-config/peerOrganizations/org2.com/peers/peer0.org2.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/hyperledger/opt/peer/crypto-config/peerOrganizations/org2.com/peers/peer0.org2.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/hyperledger/opt/peer/crypto-config/peerOrganizations/org2.com/peers/peer0.org2.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/hyperledger/opt/peer/crypto-config/peerOrganizations/org2.com/users/Admin@org2.com/msp
+
+  cli-peer1-org2:
+    container_name: cli-peer1-org2
+    extends:
+      file: base.yaml
+      service: cli-base
+    environment:
+      - CORE_PEER_ID=cli-peer1-org2
+      - CORE_PEER_ADDRESS=peer1.org2.com:10051
+      - CORE_PEER_LOCALMSPID=Org2MSP
+      - CORE_PEER_TLS_CERT_FILE=/hyperledger/opt/peer/crypto-config/peerOrganizations/org2.com/peers/peer1.org2.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/hyperledger/opt/peer/crypto-config/peerOrganizations/org2.com/peers/peer1.org2.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/hyperledger/opt/peer/crypto-config/peerOrganizations/org2.com/peers/peer1.org2.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/hyperledger/opt/peer/crypto-config/peerOrganizations/org2.com/users/Admin@org2.com/msp
+
+  ca-org1:
+    container_name: ca-org1
+    extends:
+      file: base.yaml
+      service: ca-base
+    environment:
+      - FABRIC_CA_SERVER_CA_NAME=ca-org1
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org1.com-cert.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg4Hwt/FeN1y7ePgsRCXgkX0om4wKggwkkQC6R6Sdwg2mhRANCAARAysXo0jF5Az5jUObnGRNHU6kvCCAI2n/8uFdOo/i8iPvB/8BTtgrx+rSl6f/oVnw9vRNlVOEW/ZfB03/e3epu
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org1.com-cert.pem
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg4Hwt/FeN1y7ePgsRCXgkX0om4wKggwkkQC6R6Sdwg2mhRANCAARAysXo0jF5Az5jUObnGRNHU6kvCCAI2n/8uFdOo/i8iPvB/8BTtgrx+rSl6f/oVnw9vRNlVOEW/ZfB03/e3epu
+    ports:
+      - 7054:7054
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
+    volumes:
+      - /root/fabric_cluster/crypto-config/peerOrganizations/org1.com/ca:/etc/hyperledger/fabric-ca-server-config
+  ca-org2:
+    container_name: ca-org2
+    extends:
+      file: base.yaml
+      service: ca-base
+    environment:
+      - FABRIC_CA_SERVER_CA_NAME=ca-org2
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org2.com-cert.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgSAjLaVDM5Zahbnm6fo9cNGe3/aSGMH5ThCC30YJXlfihRANCAAR8/093Yml+C6HBLaH3JN0QpvTPV4Ks52ViBalBghhSCRfgJMBlUawEyavvuwUWUm0OH835p7kW9JTxL+eKy3Sn
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org2.com-cert.pem
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgSAjLaVDM5Zahbnm6fo9cNGe3/aSGMH5ThCC30YJXlfihRANCAAR8/093Yml+C6HBLaH3JN0QpvTPV4Ks52ViBalBghhSCRfgJMBlUawEyavvuwUWUm0OH835p7kW9JTxL+eKy3Sn
+    ports:
+      - 8054:7054
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
+    volumes:
+      - /root/fabric_cluster/crypto-config/peerOrganizations/org2.com/ca:/etc/hyperledger/fabric-ca-server-config
+

@@ -1,0 +1,10 @@
+
+#启动测试网络后
+network.sh up -s couchdb
+
+#查看5984端口的状态。
+netstat -ntlp |grep 5984
+
+#访问如下URL可以打开CouchDB的管理页面
+http://127.0.0.1:5984/_utils
+

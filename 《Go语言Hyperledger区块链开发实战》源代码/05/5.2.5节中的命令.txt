@@ -1,0 +1,5 @@
+#查看configtxgen工具的使用方法
+cd $GOPATH/src/github.com/hyperledger/fabric/scripts/fabric-samples/bin/
+./configtxgen --help
+
+

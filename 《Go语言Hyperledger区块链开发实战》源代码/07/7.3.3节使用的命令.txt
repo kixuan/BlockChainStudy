@@ -1,0 +1,30 @@
+#将cryptogen所在的路径添加到环境变量PATH中。
+
+export PATH=$GOPATH/src/github.com/hyperledger/fabric/scripts/fabric-samples/bin:$PATH
+
+#生成证书和密钥文件。
+
+cd /root/fabric_cluster
+cryptogen generate --config=./config/crypto-config.yaml
+
+#生成通道mychannel的创世区块：
+
+cd /root/fabric_cluster
+configtxgen -profile SampleMultiNodeEtcdRaft -channelID mychannel -configPath ./config -outputBlock /root/fabric_cluster/channel-artifacts/genesis.block
+
+#查看创建的创世区块。
+ls /root/fabric_cluster/channel-artifacts
+
+#4．生成创建通道使用的配置交易文件
+configtxgen -profile TwoOrgsChannel -configPath ./config -outputCreateChannelTx /root/fabric_cluster/channel-artifacts/channel.tx -channelID mychannel
+
+
+
+#为组织Org1配置锚节点：
+
+configtxgen -profile TwoOrgsChannel  -configPath ./config -outputAnchorPeersUpdate /root/fabric_cluster/channel-artifacts/Org1MSPanchors.tx -channelID mychannel -asOrg Org1MSP
+
+
+# 为组织Org2配置锚节点：
+
+configtxgen -profile TwoOrgsChannel -configPath ./config -outputAnchorPeersUpdate /root/fabric_cluster/channel-artifacts/Org2MSPanchors.tx -channelID mychannel -asOrg Org2MSP

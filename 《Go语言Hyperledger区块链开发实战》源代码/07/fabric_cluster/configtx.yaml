@@ -1,0 +1,192 @@
+---
+Organizations:
+  - &OrdererOrg
+    Name: OrdererOrg
+    ID: OrdererMSP
+    MSPDir: /root/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('OrdererMSP.admin')"
+  - &Org1
+    Name: Org1MSP
+    ID: Org1MSP
+    MSPDir: /root/fabric_cluster/crypto-config/peerOrganizations/org1.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('Org1MSP.admin', 'Org1MSP.peer', 'Org1MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('Org1MSP.admin', 'Org1MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('Org1MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('Org1MSP.peer')"
+    AnchorPeers:
+      - Host: peer0.org1.com
+        Port: 7051
+  - &Org2
+    Name: Org2MSP
+    ID: Org2MSP
+    MSPDir: /root/fabric_cluster/crypto-config/peerOrganizations/org2.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('Org2MSP.admin', 'Org2MSP.peer', 'Org2MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('Org2MSP.admin', 'Org2MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('Org2MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('Org2MSP.peer')"
+
+    AnchorPeers:
+      - Host: peer0.org2.com
+        Port: 7051
+Capabilities:
+  Channel: &ChannelCapabilities
+    V2_0: true
+  Orderer: &OrdererCapabilities
+    V2_0: true
+  Application: &ApplicationCapabilities
+    V2_0: true
+Application: &ApplicationDefaults
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    LifecycleEndorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+    Endorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+
+  Capabilities:
+    <<: *ApplicationCapabilities
+Orderer: &OrdererDefaults
+  OrdererType: etcdraft
+  Addresses: # 排序节点集群
+    - orderer0.consortiums.com:7050
+    - orderer1.consortiums.com:7050
+    - orderer2.consortiums.com:7050
+    - orderer3.consortiums.com:7050
+    - orderer4. consortiums.com:7050
+  # 打包区块的最长时间间隔，即每2s执行一次打包区块
+  BatchTimeout: 2s
+  # 指定区块中可以包含的最大交易上限
+  BatchSize:
+    MaxMessageCount: 10
+    AbsoluteMaxBytes: 99 MB
+    PreferredMaxBytes: 512 KB
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    # 指定从排序节点发送到沿着节点的区中必须包含任意有写权限节点的签名
+    BlockValidation:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+Channel: &ChannelDefaults
+  Policies:
+    # 指定谁可以调用'Deliver' API
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    # 指定谁可以调用 'Broadcast' API
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    # 指定谁可以修改通道配置
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+  Capabilities:
+    <<: *ChannelCapabilities
+
+Profiles:
+  TwoOrgsChannel:
+    Consortium: SampleConsortium
+    <<: *ChannelDefaults
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Org1
+        - *Org2
+      Capabilities:
+        <<: *ApplicationCapabilities
+
+  SampleMultiNodeEtcdRaft:
+    <<: *ChannelDefaults
+    Capabilities:
+      <<: *ChannelCapabilities
+    Orderer:
+      <<: *OrdererDefaults
+      OrdererType: etcdraft
+      EtcdRaft:
+        Consenters:
+          - Host: orderer0.consortiums.com
+            Port: 7050
+            ClientTLSCert: /root/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer0.consortiums.com/tls/server.crt
+            ServerTLSCert: /root/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer0.consortiums.com/tls/server.crt
+          - Host: orderer1.consortiums.com
+            Port: 7050
+            ClientTLSCert: /root/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer1.consortiums.com/tls/server.crt
+            ServerTLSCert: /root/hyperledger/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer1.consortiums.com/tls/server.crt
+          - Host: orderer2.consortiums.com
+            Port: 7050
+            ClientTLSCert: /root/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer2.consortiums.com/tls/server.crt
+            ServerTLSCert: /root/hyperledger/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer2.consortiums.com/tls/server.crt
+          - Host: orderer3.consortiums.com
+            Port: 7050
+            ClientTLSCert: /root/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer3.consortiums.com/tls/server.crt
+            ServerTLSCert: /root/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer3.consortiums.com/tls/server.crt
+          - Host: orderer4.consortiums.com
+            Port: 7050
+            ClientTLSCert: /root/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer4.consortiums.com/tls/server.crt
+            ServerTLSCert: /root/fabric_cluster/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer4.consortiums.com/tls/server.crt
+      Addresses:
+        - orderer0.consortiums.com:7050
+        - orderer1.consortiums.com:7050
+        - orderer2.consortiums.com:7050
+        - orderer3.consortiums.com:7050
+        - orderer4.consortiums.com:7050
+      Organizations:
+        - *OrdererOrg
+      Capabilities:
+        <<: *OrdererCapabilities
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - <<: *OrdererOrg
+    Consortiums:
+      SampleConsortium:
+        Organizations:
+          - *Org1
+          - *Org2

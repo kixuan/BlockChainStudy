@@ -1,0 +1,9 @@
+#卸载较低版本的Git
+yum remove -y git
+
+#安装git的命令如下：
+yum -y install git
+
+#查看git的版本信息。
+git version
+

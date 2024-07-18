@@ -1,0 +1,12 @@
+
+#【例5-2】  演示在测试网络中添加组织Org3
+# 启动测试网络并创建通道channel1。
+
+cd $GOPATH/src/github.com/hyperledger/fabric/scripts/fabric-samples/test-network
+./network.sh up 
+./network.sh createChannel -c channel1
+
+#向通道channel1中添加组织Org3
+
+cd addOrg3
+./addOrg3.sh up -c channel1

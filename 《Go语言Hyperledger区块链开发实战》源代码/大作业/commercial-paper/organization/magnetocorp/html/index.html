@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业MagnetoCorp管理员页面</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js">
+    </script>
+    <script>
+        $(document).ready(function () {
+            $(".form").hide();
+            $("#home").click(function () {
+                $(".content").show();
+                $(".form").hide();
+            });
+            //设置到期日为
+            var mydate = new Date();
+            var strdate = (mydate.getFullYear() + 1) + "-";
+            if (mydate.getMonth() + 1 < 10) {
+                strdate += "0" + (mydate.getMonth() + 1) + "-";
+            } else {
+                strdate += (mydate.getMonth() + 1) + "-";
+            }
+            if (mydate.getDate() < 10) {
+                strdate += "0" + mydate.getDate() + "";
+            } else {
+                strdate += mydate.getDate() + "";
+            }
+            $("#maturityDateTime").val(strdate);
+            $("#add_to_wallet").click(function () {
+
+                $.ajax({
+                    type: "GET",
+                    url: "http://192.168.1.111:8080/add_to_wallet",
+
+                    success: function (data) {
+                        //bj = $.parseJSON(data);
+                        if (data.errcode == 0) {
+                            alert("操作成功");
+                        } else {
+                            alert(data.message);
+                        }
+                    }
+                });
+            });
+            // 点击“发行商业票据”链接
+            $("#issue").click(function () {
+                $(".content").hide();
+                $(".form").show();
+            });
+            //点击“提交”按钮
+            $("#submit").click(function () {
+                var currentdate = getDateTime("");
+                alert($("#papernumber").val())
+                alert($("#price").val())
+                $.ajax({
+                    type: "GET",
+                    url: "http://192.168.1.111:8080/issue",
+                    data: {
+                        issuer: "MagnetoCorp",
+                        papernumber: $("#papernumber").val(),
+                        price: $("#price").val(),
+                        maturityDateTime: $("#maturityDateTime").val(),
+                        issuedatetime: currentdate
+                    },
+                    dataType: "json",
+                    success: function (data) {
+                        //bj = $.parseJSON(data);
+                        if (data.errcode == 0) {
+                            alert("操作成功");
+                        } else {
+                            alert(data.message);
+                        }
+                    }
+                });
+            });
+        });
+
+        function getDateTime(type) {
+            var date = new Date();
+            var hengGang = "-";
+            var maoHao = ":";
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1;
+            var curDate = date.getDate();
+            var curHours = date.getHours();
+            var curMinutes = date.getMinutes();
+            var curSeconds = date.getSeconds();
+
+            if (month >= 1 && month <= 9) {
+                month = "0" + month;
+            }
+            if (curDate >= 0 && curDate <= 9) {
+                curDate = "0" + curDate;
+            }
+            if (curHours >= 0 && curHours <= 9) {
+                curHours = "0" + curHours;
+            }
+            if (curMinutes >= 0 && curMinutes <= 9) {
+                curMinutes = "0" + curMinutes;
+            }
+            if (curSeconds >= 0 && curSeconds <= 9) {
+                curSeconds = "0" + curSeconds;
+            }
+            var currentdate = "";
+            if (type == "year") {
+                currentdate = year;
+                return currentdate;
+            } else if (type == "month") {
+                currentdate = year + hengGang + month;
+                return currentdate;
+            } else {
+                currentdate = year + hengGang + month + hengGang + curDate + " " + curHours + maoHao + curMinutes + maoHao + curSeconds;
+                return currentdate;
+            }
+        }
+    </script>
+</head>
+<body>
+<div class="nav">
+    <div class="navleft">
+        <a id="home">首页</a>
+        <a id="add_to_wallet">添加身份信息到钱包</a>
+        <a id="issue">发行商业票据</a>
+
+    </div>
+    <div class="navright">
+        <a href="#">设置</a>
+        <a href="#" id="login">登录</a>
+    </div>
+    <div class="clear"></div>
+</div>
+<div class="main">
+    <div class="pic">
+        <h2>基于Fabric网络的商业票据实例开发</h2><br><br>
+        <h3>企业MagnetoCorp管理页面</h3>
+    </div>
+    <div class="content">
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在fabric-samples目录下包含一个commercial-paper示例项目。这是一个简易的由银行向企业开出商业票据的应用。本章会对此实例的智能合约代码进行解析，并在此项目的基础上开发Go语言版本的客户端应用和前端程序使读者了解Fabric区块链应用程序的完整开发流程。<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了便于用户使用本章实例，本实例中包含了银行DigiBank和企业MagnetoCorp前端页面。因为前端开发并不是本书关注的主题，所以本实例中的前端页面功能和架构都比较简单。
+    </div>
+    <div class="form">
+        <h4>发行商业票据</h4>
+
+        <label for="papernumber">商业票据编号：</label>
+        <input type="text" name="papernumber" id="papernumber"/> </br>
+        <label for="maturityDateTime">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;发行价格：</label>
+        <input type="text" name="price" id="price"/> </br>
+        <label for="maturityDateTime">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;到期日期：</label>
+        <input type="text" name="maturityDateTime" id="maturityDateTime"/> </br></br>
+        <button id="submit">提交</button>
+    </div>
+</div>
+<div class="foot">
+    <a href="#">本实例基于Fabric官方示例commercial_paper</a>
+</div>
+</body>
+</html>
+

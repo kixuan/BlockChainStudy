@@ -1,0 +1,3 @@
+#查看系统通道的创世区块
+ll /opt/app/go/fabric/scripts/fabric-samples/test-network/system-genesis-block
+

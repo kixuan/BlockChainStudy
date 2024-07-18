@@ -1,0 +1,25 @@
+#创建一个保存Hyperledger源代码的目录
+
+mkdir $GOPATH/src
+mkdir $GOPATH/src/github.com
+mkdir $GOPATH/src/github.com/hyperledger
+
+# 1．下载Fabric源代码
+cd $GOPATH/src/github.com/hyperledger
+git clone https://gitee.com/mirrors/fabric.git
+
+# 下载Fabric区块链的示例代码
+
+cd $GOPATH/src/github.com/hyperledger/fabric/scripts/
+git checkout release-2.3
+git clone https://gitee.com/hyperledger/fabric-samples.git
+
+# 3．安装Fabric区块链
+cd $GOPATH/src/github.com/hyperledger/fabric/scripts/
+sh bootstrap.sh
+
+#在执行 bootstrap.sh脚本的时候，通过参数-b控制跳过调用download()函数下载 这两个文件
+
+cd $GOPATH/src/github.com/hyperledger/fabric/scripts/
+./bootstrap.sh -b
+

@@ -1,0 +1,67 @@
+#2．在CentOS中安装Docker
+#（1）升级yum包：
+sudo yum update
+#（2）卸载旧版本
+sudo yum remove docker  docker-common docker-selinux docker-engine
+#（3）安装需要的软件包
+sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+#（4）选择安装Docker的版本，执行如下命令设置yum源。
+sudo yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+
+#查看所有仓库中所有docker版本。
+yum list docker-ce --showduplicates | sort -r
+#查看Docker的版本。
+docker --version
+
+
+#3．Docker服务管理
+#启动Docker服务。
+systemctl start docker
+
+#查看Docker服务的状态。
+systemctl status docker
+
+#设置自动启动Docker服务。
+systemctl enable docker
+
+
+#4．配置Docker镜像加速器
+
+sudo mkdir -p /etc/docker 
+vi /etc/docker/daemon.json 
+
+#应用配置，重启Docker服务。
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+
+5．使用Docker容器
+#使用docker run命令可以运行Docker镜像
+docker run hello-world
+
+#查看本机Docker镜像
+docker images
+
+#拉取ubuntu
+docker pull ubuntu
+
+#运行镜像
+docker run -it ubuntu /bin/bash
+
+#查看Docker容器信息
+docker ps -a
+
+#启动Docker容器
+docker start  Docker容器ID
+
+#停止Docker容器
+docker stop  Docker容器ID
+
+#删除Docker容器
+Docker rm <Docker容器ID>
+
+#删除Docker镜像
+Docker rmi <Docker镜像ID>
+
+
+
+

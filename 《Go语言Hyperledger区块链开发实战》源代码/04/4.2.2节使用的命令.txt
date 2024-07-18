@@ -1,0 +1,12 @@
+#安装libtool、libtdhl-dev程序包和gcc编译器。
+
+yum install libtool-ltdl-devel
+yum -y install gcc-c++
+
+#编辑~/.bashrc，在最后添加如下代码：
+
+export PATH=$PATH:/root/go/bin/fabric-ca/bin/
+
+#然后执行下面的命令编译.bashrc文件。
+
+source ~/.bashrc

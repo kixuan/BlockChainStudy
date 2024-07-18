@@ -1,0 +1,12 @@
+#编辑/etc/profile，在文档最后，添加如下代码：
+
+export PATH="/$GOPATH/src/github.com/hyperledger/fabric/scripts/fabric-samples/bin:$PATH"
+
+#使环境变量生效。
+
+source /etc/profile
+
+# 执行如下命令：
+
+configtxgen  --help
+

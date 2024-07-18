@@ -1,0 +1,65 @@
+#首先需要安装gcc、C++编译器以及内核文件，命令如下：
+
+yum -y install gcc gcc-c++ kernel-devel
+
+然后执行如下命令，构建orderer、peer和configtxgen工具的二进制文件。
+
+cd /$GOPATH/src/github.com/hyperledger/fabric/
+make orderer peer configtxgen
+
+#查看构建的结果
+
+ls /root/gocode/src/github.com/hyperledger/fabric/build/bin
+
+#设置环境变量
+export PATH=$(pwd)/build/bin:$PATH
+export FABRIC_CFG_PATH=$(pwd)/sampleconfig
+
+#3．生成创世区块
+sudo mkdir /var/hyperledger
+configtxgen -profile SampleDevModeSolo -channelID syschannel -configPath $FABRIC_CFG_PATH -outputBlock $(pwd)/sampleconfig/genesisblock
+
+
+
+FABRIC_LOGGING_SPEC=chaincode=debug CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052 peer node start --peer-chaincodedev=true
+
+
+#9.5.2  启动排序节点
+
+ORDERER_GENERAL_GENESISPROFILE=SampleDevModeSolo orderer
+
+#9.5.3  在开发模式下启动Peer节点
+FABRIC_LOGGING_SPEC=chaincode=debug CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052 peer node start --peer-chaincodedev=true
+
+#9.5.4  创建通道
+configtxgen -channelID ch2 -outputCreateChannelTx ch2.tx -profile SampleSingleMSPChannel -configPath $FABRIC_CFG_PATH
+
+peer channel create -o 127.0.0.1:7050 -c ch2 -f ch2.tx
+
+peer channel join -b ch2.block
+
+#9.5.5  在开发模式下构建链码
+cd $GOPATH/src/github.com/hyperledger/fabric/my_contracts/sample9_5
+go mod init
+
+go build -o ./simpleChaincode
+
+#9.5.6  启动链码
+cd $GOPATH/src/github.com/hyperledger/fabric/my_contracts/sample9_5
+CORE_CHAINCODE_LOGLEVEL=debug CORE_PEER_TLS_ENABLED=false CORE_CHAINCODE_ID_NAME=simpleChaincode:1.0 ./simpleChaincode -peer.address 127.0.0.1:7052
+
+#9.5.7  批准和写入链码定义
+
+#1．批准链码定义
+peer lifecycle chaincode approveformyorg  -o 127.0.0.1:7050 --channelID ch2 --name simpleChaincode --version 1.0 --sequence 1 --init-required --signature-policy "OR ('SampleOrg.member')" --package-id simpleChaincode:1.0
+
+#2．查看通道成员批准链码定义的情况
+peer lifecycle chaincode checkcommitreadiness -o 127.0.0.1:7050 --channelID ch2 --name simpleChaincode --version 1.0 --sequence 1 --init-required --signature-policy "OR ('SampleOrg.member')"
+
+#3．将链码定义写入通道
+peer lifecycle chaincode commit -o 127.0.0.1:7050 --channelID ch2 --name simpleChaincode --version 1.0 --sequence 1 --init-required --signature-policy "OR ('SampleOrg.member')" --peerAddresses 127.0.0.1:7051
+
+#9.5.8  调用链码
+CORE_PEER_ADDRESS=127.0.0.1:7051 peer chaincode invoke -o 127.0.0.1:7050 -C ch2 -n simpleChaincode -c '{"Args":["Create","a","100"]}' --isInit
+
+#

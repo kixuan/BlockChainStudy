@@ -1,0 +1,30 @@
+#2．在CentOS中安装Docker
+# 安装wget
+yum install -y wget
+
+#（1）下载Go 1.15.3的安装包：
+cd /usr/local/
+wget https://studygolang.com/dl/golang/go1.15.3.linux-amd64.tar.gz
+
+#（2）解压缩GO语言源码到$HOME目录：
+tar -C $HOME -xzf  go1.15.3.linux-amd64.tar.gz
+
+#（3）创建保存Go语言程序的目录$HOME/gocode：
+mkdir $HOME/gocode
+
+#（4）执行下面的命令，设置GO语言的环境变量。
+vi ~/.bashrc
+
+#然后在文件中添加如下代码：
+export GOPATH=$HOME/gocode
+export GOROOT=$HOME/go
+export PATH=$PATH:$GOROOT/bin
+export PATH=$PATH:$GOPATH/bin
+
+#编译.bashrc文件
+source ~/.bashrc
+
+#查看GO语言的版本
+
+go version
+

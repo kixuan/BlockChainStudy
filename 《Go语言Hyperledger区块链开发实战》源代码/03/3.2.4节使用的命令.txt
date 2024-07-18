@@ -1,0 +1,18 @@
+#安装curl：
+
+yum install -y curl
+
+#从GitHub下载与CentOS版本相匹配的Docker Compose
+
+sudo curl -L https://get.daocloud.io/docker/compose/releases/download/1.29.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+
+#为安装脚本添加执行权限。
+
+sudo chmod +x /usr/local/bin/docker-compose
+
+#查看Docker Compose的版本信息。
+
+docker-compose -v
+
+
+

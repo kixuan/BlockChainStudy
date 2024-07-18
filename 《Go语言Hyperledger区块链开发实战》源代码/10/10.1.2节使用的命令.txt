@@ -1,0 +1,26 @@
+#下载Fabric SDK Go
+cd $GOPATH/src/github.com/hyperledger
+git clone https://github.com/hyperledger/fabric-sdk-go.git
+
+#检出最新代码
+cd $GOPATH/src/github.com/hyperledger/fabric-sdk-go
+git checkout 614551a752802488988921a730b172dada7def1d
+
+#2．安装Fabric SDK Go的依赖包
+cd $GOPATH/src/github.com/hyperledger/fabric-sdk-go
+export GOPROXY=https://goproxy.cn
+export GO111MODULE=on
+make depend
+make depend-install
+
+#手动生成相关依赖包
+#手动下载gocov
+go get -u github.com/axw/gocov/
+#手动安装gocov
+cd $GOPATH/src/github.com/axw/gocov/
+go install
+
+#手动安装dep
+export GO111MODULE=on
+go env -w GOPROXY=https://goproxy.cn
+go get -u github.com/golang/dep/cmd/dep

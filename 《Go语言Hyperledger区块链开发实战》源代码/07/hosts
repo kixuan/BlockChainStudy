@@ -1,0 +1,14 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+
+127.0.0.1 orderer0.consortiums.com 
+127.0.0.1 orderer1.fconsortiums.com 
+127.0.0.1 orderer2.consortiums.com 
+127.0.0.1 orderer3.consortiums.com 
+127.0.0.1 orderer4.consortiums.com
+127.0.0.1 peer0.org1.com 
+127.0.0.1 peer1.org1.com 
+127.0.0.1 peer0.org2.com 
+127.0.0.1 peer1.org2.com
+

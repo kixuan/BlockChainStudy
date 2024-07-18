@@ -1,0 +1,9 @@
+#初始化Fabric CA Server。
+
+fabric-ca-server init -b admin:adminpw
+
+# 启动Fabric CA Server。
+
+fabric-ca-server start -b admin:adminpw
+
+

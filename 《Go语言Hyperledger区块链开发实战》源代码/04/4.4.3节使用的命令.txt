@@ -1,0 +1,15 @@
+#以orderer用户的身份登录到CA服务器ca-orderer，指定用户的MSP目录为${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/ msp。
+
+fabric-ca-client enroll -u https://orderer:ordererpw@localhost:9054 --caname ca-orderer -M "${PWD}/organizations/ordererOrganizations/example.com/orderers/ orderer.example.com/msp" 
+
+#启动测试网络.
+cd /$GOPATH/src/github.com/hyperledger/fabric/scripts/fabric-samples/test-network
+./network.sh up -ca
+
+#查看排序服务的MSP目录结构。 
+
+cd /$GOPATH/src/github.com/hyperledger/fabric/scripts/fabric-samples/test-network/organizations/ordererOrganizations/example.com/msp
+tree
+
+
+

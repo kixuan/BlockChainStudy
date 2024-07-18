@@ -1,0 +1,63 @@
+version: '2'  # 语法格式版本
+
+services:
+  order-base: # 在docker-compose-up.yaml中会通过该名字引入下面的配置
+    image: hyperledger/fabric-orderer  #使用的Docker镜像
+    environment:
+      - FABRIC_LOGGING_SPEC=DEBUG   #日志级别
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0   #排序节点的监听地址
+      - ORDERER_GENERAL_LISTENPORT=7050   #排序节点的监听端口
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=file   #启动排序节点的方法
+      - ORDERER_GENERAL_BOOTSTRAPFILE=/var/hyperledger/orderer/orderer.genesis.block # 创世区块的路径
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP  #节点所属组织的MSP唯一标识，需与系统通道配置中保持一致
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp # msp文件所在目录
+      - ORDERER_GENERAL_TLS_ENABLED=true # 启用 TLS
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key #排序节点使用的TLS私钥文件
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt # 排序节点使用的TLS服务端证书文件
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt] # 排序节点使用的TLS CA信任根证书，用于校验客户端证书
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt #客户端证书文件，访问其他orderer节点时需要TLS双向认证
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt] # 客户端私钥文件
+    working_dir: /root/fabric_cluster/opt  # 工作目录，即Docker容器的挂载目录
+    command: orderer #容器启动后默认执行的命令
+    volumes:
+      - /root/fabric_cluster/channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block  #将宿主机中的创世区块映射到Docker容器中
+
+  peer-base: # 在docker-compose-up.yaml中会通过该名字引入下面的配置
+    image: hyperledger/fabric-peer #使用的Docker镜像
+    environment: #定义环境变量
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock #虚拟机管理系统的访问端节点
+      - FABRIC_LOGGING_SPEC=DEBUG  #日志级别
+      - CORE_PEER_TLS_ENABLED=true  #启用TLS
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true #节点是否使用动态算法选出领导节点
+      - CORE_PEER_GOSSIP_ORGLEADER=false # 是否静态指定组织的领导节点
+      - CORE_PEER_PROFILE_ENABLED=true  #是否启用HTTP分析服务
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt # Peer节点的证书文件路径
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key  # Peer节点的私钥文件路径
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt # Peer节点的验证根证书文件路径
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s #在初始化和调用链码方法时节点等待的超时时间
+    working_dir: /root/fabric_cluster/opt/peer  #工作目录
+    command: peer node start
+    volumes:
+      - /var/run/:/host/var/run/
+
+  cli-base: # 在docker-compose-up.yaml中会通过该名字引入下面的配置
+    image: hyperledger/fabric-tools #使用的Docker镜像
+    tty: true
+    stdin_open: true
+    environment: #环境变量
+      - GOPATH=/root/go  #Go语言项目目录
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock #虚拟机管理系统的访问端节点
+      - FABRIC_LOGGING_SPEC=DEBUG  #日志级别
+      - CORE_PEER_TLS_ENABLED=true #启用TLS
+    working_dir: /root/fabric_cluster/opt/peer  #工作目录
+    command: /bin/bash
+    volumes:
+      - /var/run/:/host/var/run/
+      - / root/fabric_cluster/chaincode/go/:/hyperledger/cluster/chaincode/go # 存储链码的目录
+      - /root/fabric_cluster/crypto-config:/hyperledger/opt/peer/crypto-config/
+      - /root/fabric_cluster/channel-artifacts:/hyperledger/opt/peer/channel-artifacts
+
+  ca-base:
+    image: hyperledger/fabric-ca
+

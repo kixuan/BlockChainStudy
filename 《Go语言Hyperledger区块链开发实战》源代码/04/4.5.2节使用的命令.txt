@@ -1,0 +1,17 @@
+#将cryptogen等工具文件复制到/root/orgs/文件夹下。
+
+cd /root/orgs
+cp -r $GOPATH/src/github.com/hyperledger/fabric/scripts/fabric-samples/bin/ ./
+
+
+#生成默认的crypto-config.yaml文件。
+
+cryptogen showtemplate >> crypto-config.yaml
+
+#生成证书。
+
+cd /root/orgs
+./bin/cryptogen generate --config=./crypto-config.yaml
+
+
+

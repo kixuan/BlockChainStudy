@@ -1,0 +1,24 @@
+OrdererOrgs:
+  - Name: Orderer
+    Domain: consortiums.com
+    Specs:
+      - Hostname: orderer0
+      - Hostname: orderer1
+      - Hostname: orderer2
+      - Hostname: orderer3
+      - Hostname: orderer4
+PeerOrgs:
+  - Name: Org1
+    Domain: org1.com
+    EnableNodeOUs: true
+    Template:
+      Count: 2 #生成证书的数量 
+    Users:
+      Count: 1 #生成用户证书个数 
+  - Name: Org2
+    Domain: org2.com
+    EnableNodeOUs: true
+    Template:
+      Count: 2
+    Users:
+      Count: 1

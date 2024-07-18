@@ -1,0 +1,72 @@
+#【例4-1】设置环境变量FABRIC_CA_SERVER_PORT为7055。
+
+export FABRIC_CA_SERVER_PORT=7055
+
+#启动Fabric CA服务器端。
+
+fabric-ca-server start -b admin:adminpw
+
+#【例4-2】
+fabric-ca-server start -b admin:adminpw -p 7056
+
+#安装MySQL数据库：
+
+yum install mysql-community-server -y
+
+#从日志中查看MySQL数据库的临时密码。
+
+grep "temporary password" /var/log/mysqld.log
+
+#对MySQL数据库进行安全设置。
+
+mysql_secure_installation
+
+#登录到MySQL数据库。
+
+mysql -u root -h localhost -p
+
+#开通任何IP地址都可以远程连接到MySQL数据库。
+
+use mysql;
+update user set host='%' where user='root' and host='localhost';
+flush privileges;
+
+#关闭防火墙。
+
+systemctl stop firewalld
+
+#查看MySQL数据库的端口工作情况。
+netstat -an|grep 3306
+
+#取消MySQL数据库的strict模式
+SET GLOBAL sql_mode = 'NO_ENGINE_SUBSTITUTION'
+
+#重新初始化Fabric CA Server。
+
+fabric-ca-server init -b admin:adminpw
+
+#例4-4
+mkdir /root/go/bin/fabric-ca/clients
+mkdir /root/go/bin/fabric-ca/clients/admin
+   export FABRIC_CA_CLIENT_HOME=/root/go/bin/fabric-ca/clients/admin
+
+#在Navicat中连接MySQL数据库，执行如下命令：
+
+SET GLOBAL sql_mode = 'NO_ENGINE_SUBSTITUTION'
+
+#打开一个新的终端窗口，执行如下命令启动Fabric CA Server。
+
+   fabric-ca-server start -b admin:adminpw
+
+#在原有终端窗口中执行如下命令在Fabric CA客户端登录一个已有的身份admin。
+
+fabric-ca-client enroll -u http://admin:adminpw@localhost:7054
+
+#例4-5
+fabric-ca-client register --id.name peer1-org1  --id.type peer --id.secret userpwd -u http://localhost:7054
+
+#在Fabric CA客户端使用新用户peer1-org1登录。
+
+export FABRIC_CA_CLIENT_HOME=$HOME/fabric-ca/clients/peer1-org1
+fabric-ca-client enroll -u http://peer1-org1:userpwd@localhost:7054
+

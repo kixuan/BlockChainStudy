@@ -1,0 +1,30 @@
+#进入容器cli-peer0-org1的内部。
+
+docker exec -it cli-peer0-org1 bash 
+
+# 在容器中创建通道mychannel。
+
+peer channel create -o orderer0.consortiums.com:7050 -c mychannel -f /hyperledger/opt/peer/channel-artifacts/channel.tx --tls --cafile /hyperledger/opt/peer/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer0.consortiums.com/msp/tlscacerts/tlsca.consortiums.com-cert.pem 
+
+#将当前Peer节点加入通道中。
+peer channel join -b /hyperledger/opt/peer/channel-artifacts/genesis.block
+
+#3．更新锚节点
+#（1）进入容器cli-peer0-org1的内部。
+
+docker exec -it cli-peer0-org1 bash 
+
+# （2）更新组织org1的锚节点，命令如下。
+
+peer channel update -o orderer0.consortiums.com:7050 -c mychannel -f /hyperledger/opt/peer/channel-artifacts/Org1MSPanchors.tx --tls --cafile /hyperledger/opt/peer/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer0.consortiums.com/msp/tlscacerts/tlsca.consortiums.com-cert.pem
+
+#（1）进入容器cli-peer0-org2的内部。
+
+docker exec -it cli-peer0-org2 bash 
+
+# （2）更新组织org2的锚节点，命令如下。
+
+peer channel update -o orderer0.consortiums.com:7050 -c mychannel -f /hyperledger/opt/peer/channel-artifacts/Org2MSPanchors.tx --tls --cafile /hyperledger/opt/peer/crypto-config/ordererOrganizations/consortiums.com/orderers/orderer0.consortiums.com/msp/tlscacerts/tlsca.consortiums.com-cert.pem
+
+
+

@@ -1,0 +1,13 @@
+#（1）启动测试网络
+cd /$GOPATH/src/github.com/hyperledger/fabric/scripts/fabric-samples/test-network
+./network.sh up createChannel -ca
+
+#（2）部署智能合约
+./network.sh deployCC -ccn basic -ccp ../asset-transfer-basic/chaincode-go -ccl go
+
+#（3）运行示例程序assetTransfer.go
+cd ../ asset-transfer-basic/application-go
+go run assetTransfer.go
+
+
+

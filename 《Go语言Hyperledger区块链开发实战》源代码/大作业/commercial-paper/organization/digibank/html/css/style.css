@@ -1,0 +1,80 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+.navleft {
+    float: left;
+}
+
+.navright {
+    float: right;
+}
+
+.nav a {
+    text-decoration: none;
+    color: black;
+    margin: 10px;
+    width: 30px;
+    height: 20px;
+}
+
+.nav a:hover {
+    color: blue;
+}
+
+#login {
+    background-color: #4E6EF2;
+    color: white;
+}
+
+.clear {
+    clear: both;
+}
+
+.main {
+    text-align: center;
+}
+
+.pic {
+    text-align: center;
+}
+
+.content {
+    text-align: left;
+    margin: 10px auto 10px auto;
+    padding-left: 200px;
+    padding-right: 200px;
+}
+
+.form {
+    margin: 50px auto 10px auto;
+    text-align: center;
+}
+
+.foot {
+    position: fixed;
+    bottom: 0px;
+}
+
+.foot a {
+    text-decoration: none;
+    color: black;
+}
+
+#add_to_wallet, #home, #buy, #redeem {
+    cursor: pointer;
+    font-size: small;
+}
+
+button {
+    width: 80px;
+    height: 30px;
+    color: darkblue;
+}
+
+h4 {
+    margin-top: 10px;
+    margin-bottom: 30px;
+}
+

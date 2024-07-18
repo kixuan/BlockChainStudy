@@ -1,0 +1,16 @@
+#启动测试网络。
+
+cd $GOPATH/src/github.com/hyperledger/fabric/scripts/fabric-samples/test-network
+./network.sh up
+
+#关闭测试网络。
+
+cd $GOPATH/src/github.com/hyperledger/fabric/scripts/fabric-samples/test-network
+./network.sh down
+
+#在启动测试网络的同时启用内置的CA服务
+./network.sh up -ca
+
+#检查Org1管理员用户的MSP文件夹
+tree organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/
+
