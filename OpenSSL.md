@@ -55,14 +55,14 @@ OpenSSL官方命令手册：[OpenSSL commands - OpenSSL Documentation](https://d
 
 ### 常见文件后缀
 
+**`.pem`**： PEM（Privacy Enhanced Mail）格式文件的标准后缀，通常用于存储证书、私钥、公钥和证书链。文件内容通常以 Base64
+编码并用 "-----BEGIN CERTIFICATE-----" 等标头和尾标记。`cert.pem`（证书），`private.pem`（私钥），`public.pem`（公钥）。
+
 **`.key`**：通常用于表示私钥或公钥文件。这个后缀比较通用，可以表示任何类型的加密密钥。 `private.key`（私钥），`public.key`（公钥）。
 
 **`.pub`**:通常用于表示公钥文件。这个后缀明确指示文件包含公钥。`id_rsa.pub`（RSA 公钥），`id_ecdsa.pub`（ECDSA 公钥）。
 
 **`.pri`**：通常用于表示私钥文件。虽然不是标准后缀，但一些系统或工具可能使用这个后缀来标识私钥文件。 `private.pri`。
-
-**`.pem`**： PEM（Privacy Enhanced Mail）格式文件的标准后缀，通常用于存储证书、私钥、公钥和证书链。文件内容通常以 Base64
-编码并用 "-----BEGIN CERTIFICATE-----" 等标头和尾标记。`cert.pem`（证书），`private.pem`（私钥），`public.pem`（公钥）。
 
 **`.crt`**：通常用于表示 X.509 证书文件。这个后缀通常用于证书文件，格式可以是 PEM 或 DER。`server.crt`（服务器证书），`ca.crt`
 （CA 证书）。
@@ -115,11 +115,11 @@ openssl version
    # check检查私钥文件是否被修改过，如果修改了会输出RSA key not ok
    openssl rsa -in private.key -check
    
-   # 输出私钥明文到文件夹中
+   # 输出私钥明文到文件夹中，就是把解析后的私钥输出
    openssl rsa -in private.key -text -out private.txt
    ```
 
-   加钥私密文件
+   （可选）加钥私密
 
    ```bash
    # 加密私钥文件，加密的密码为123456
@@ -263,7 +263,7 @@ openssl version
    # -signature filename:指定签名文件，以便与数据一起用于验证签名
    
    # 计算文件.txt 的 SHA-256 哈希并将结果写入 hash.txt 文件：
-   dgst -sha256 -hex (-out hash.txt) plaintext.txt 
+   openssl dgst -sha256 -hex (-out hash.txt) plaintext.txt 
    
    # 使用私钥对plaintext.txt生成签名，并将签名保存到signature.sig 中【使用-sign签名时绝对不能加-hex，不然后面验签一定会失败】
    openssl dgst -sha256 -sign private.key -out signature.sig plaintext.txt
@@ -290,10 +290,13 @@ openssl version
 
 ### （一）在SpringBoot中使用
 
+>
+使用openssl创建自签名证书，并在SpringBoot应用中配置HTTPS，确保与HTTP请求兼容：[openssl创建自认证证书后，添加在springboot配置中，从而发起https请求，要求http和https请求兼容_csr证书怎么添加到springboot项目中去-CSDN博客](https://blog.csdn.net/csdnfzp2016/article/details/105154863)
+
 1. OpenSSL生成密钥和证书，配置HTTPS
 
 ```yaml
-# application.yml
+# application.properties
 server:
    ssl:
       key-store: classpath:keystore.p12
@@ -514,3 +517,25 @@ openssl rsa 专门处理RSA密钥
 
 > The use of the genpkey program is encouraged over the algorithm specific utilities because additional algorithm
 > options and ENGINE provided algorithms can be used.
+
+## 实现
+
+> 基于区块链平台Hyperledger
+> Fabric，参考官方示例实现一个智能合约，同时基于SpringBoot和官方SDK实现一个应用程序，用于实现数字证书的存储、查询等；结合上述内容，使用OpenSSL为现有系统实现数字证书的生成、私钥签名、验签等内容。
+
+### **Hyperledger Fabric 智能合约实现**
+
+该智能合约用于存储和管理数字证书，需要实现的功能包括：
+
+- 创建新证书：将证书信息写入区块链。
+- 查询证书：从区块链中读取证书信息。
+- 更新证书：修改证书信息。
+- 撤销证书：标记证书无效。
+
+### **OpenSSL 数字证书管理**
+
+使用 OpenSSL 为现有系统实现数字证书的生成、私钥签名、验签等功能,该部分与 Hyperledger Fabric 集成，用于：
+
+- 生成证书：为新用户生成数字证书。
+- 签名：使用私钥对证书进行签名。
+- 验签：验证证书的有效性。
