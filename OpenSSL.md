@@ -76,6 +76,9 @@ OpenSSL官方命令手册：[OpenSSL commands - OpenSSL Documentation](https://d
 
 ### （零）使用 OpenSSL 的流程
 
+>
+安装Ubuntu虚拟机：[VMware创建Ubuntu虚拟机详细教程-CSDN博客](https://blog.csdn.net/m0_62919535/article/details/137326816)
+
 1. **生成密钥对**：使用 `openssl genpkey` 和 `openssl rsa` 生成私钥和公钥。
 2. **创建 CSR**：使用 `openssl req` 创建证书签名请求。
 3. **获得数字证书**：通过 CA 颁发或自签名生成证书。
@@ -285,6 +288,181 @@ openssl version
 
    ```bash
    ```
+
+### （四）自建CA
+
+生成证书请求文件：把信息和公钥放进证书请求文件，进行数字签名保证请求文件完整性和一致性
+
+验证证书请求文件：
+
+创建根CA
+
+1. `openssl req`：生成证书请求（CSR）或自签名证书
+
+   ```bash
+   # 生成证书请求文件
+   openssl req -new -key pri_key.pem -out req1.csr
+   
+   # 自签名证书  -x509
+   # 使用私钥 pri_key.pem 和证书签名请求 req1.csr 生成一个有效期为 365 天的自签名证书，并将其保存到 CA1.crt
+   openssl req -x509 -key pri_key.pem -in req1.csr -out CA1.crt -days 365
+   
+   ```
+
+```bash
+使用方法：req [选项]
+
+通用选项：
+ -help                 显示此摘要
+ -engine val           使用引擎，可能是硬件设备
+ -keygen_engine val    指定用于密钥生成操作的引擎
+ -in infile            X.509 请求输入文件（默认标准输入）
+ -inform PEM|DER       输入格式 - DER 或 PEM
+ -verify               验证请求的自签名
+
+证书选项：
+ -new                  新请求
+ -config infile        请求模板文件
+ -section val          要使用的配置部分（默认 "req"）
+ -utf8                 输入字符是 UTF8（默认 ASCII）
+ -nameopt val          证书主题/颁发者名称打印选项
+ -reqopt val           各种请求文本选项
+ -text                 请求的文本形式
+ -x509                 输出 X.509 证书结构而不是证书请求
+ -CA infile            用于签署证书的颁发者证书，暗含 -x509
+ -CAkey val            与 -CA 一起使用的颁发者私钥；默认是 -CA 参数
+                       （某些 CA 需要此选项）
+ -subj val             设置或修改请求或证书的主题
+ -subject              打印输出请求或证书的主题
+ -multivalue-rdn       已废弃；始终支持多值 RDN。
+ -days +int            证书有效天数
+ -set_serial val       要使用的序列号
+ -copy_extensions val  使用 -x509 时从请求中复制扩展
+ -addext val           额外的证书扩展键=值对（可以给出多次）
+ -extensions val       证书扩展部分（覆盖配置文件中的值）
+ -reqexts val          请求扩展部分（覆盖配置文件中的值）
+ -precert              在生成的证书中添加毒药扩展（暗含 -new）
+
+密钥和签名选项：
+ -key val              用于签名的密钥，且除非给出 -in 否则包括在内
+ -keyform format       密钥文件格式（ENGINE，其他值将被忽略）
+ -pubkey               输出公钥
+ -keyout outfile       写入私钥的文件
+ -passin val           私钥和证书密码源
+ -passout val          输出文件密码源
+ -newkey val           生成新密钥，格式为 [<alg>:]<nbits> 或 <alg>[:<file>] 或 param:<file>
+ -pkeyopt val          公钥选项，以 opt:value 形式
+ -sigopt val           签名参数，以 n:v 形式
+ -vfyopt val           验证参数，以 n:v 形式
+ - *                   任何支持的摘要算法
+
+输出选项：
+ -out outfile          输出文件
+ -outform PEM|DER      输出格式 - DER 或 PEM
+ -batch                生成请求时不询问任何问题
+ -verbose              详细输出
+ -noenc                不加密私钥
+ -nodes                不加密私钥；已废弃
+ -noout                不输出 REQ
+ -newhdr               在头部行中输出 "NEW"
+ -modulus              RSA 模数
+
+随机状态选项：
+ -rand val             将给定文件加载到随机数生成器中
+ -writerand outfile    将随机数据写入指定文件
+
+提供者选项：
+ -provider-path val    提供者加载路径（如果需要，必须在 'provider' 参数之前）
+ -provider val         要加载的提供者（可以多次指定）
+ -propquery val        获取算法时使用的属性查询
+```
+
+```bash
+# 1. 自建CA
+# 生成私钥
+openssl genrsa -out /etc/pki/CA/private/cakey.pem
+# 生成证书签名请求CSR
+openssl req -new -key /etc/pki/CA/private/cakey.pem -out rootCA.csr
+# 自签名 CA 证书
+openssl ca -selfsign -in rootCA.csr
+# 复制生成的 CA 证书（遵守openssl.cnf文件
+cp /etc/pki/CA/newcerts/01.pem /etc/pki/CA/cacert.pem
+
+# 2.为他人颁发证书
+openssl ca -in youwant1.csr
+# 签署成功后，证书位于/etc/pki/CA/newcert目录下，将新生成的证书文件发送给申请者即可。
+
+# 如果需要撤销证书，先将其加入撤销列表，然后更新撤销列表文件：
+openssl ca -revoke /etc/pki/CA/newcerts/02.pem 
+（？）openssl ca -gencrl -out ~/myCA/crl/ca.crl
+```
+
+典型CA目录
+
+```bash
+/etc/pki/CA/
+├── certs/           # 存放已签发的证书
+├── crl/             # 存放吊销证书列表（CRL）
+├── newcerts/        # 存放新签发的证书
+├── private/         # 存放私钥（确保权限为700）
+│   └── cakey.pem    # CA 私钥文件
+├── cacert.pem       # CA 自签名证书
+├── serial           # 序列号文件
+├── index.txt        # 索引文件
+└── openssl.cnf      # OpenSSL 配置文件
+```
+
+### **配置OpenSSL**
+
+`basicConstraints=CA:FALSE`
+
+在CA目录下创建一个配置文件 `openssl.cnf`，用于定义证书颁发的相关设置。以下是一个简单的配置文件示例：
+
+```bash
+[ ca ]
+default_ca = my_ca
+
+[ CA_default ]
+dir          = /etc/pki/CA             # 定义路径变量
+certs        = $dir/certs              # 已颁发证书的保存目录
+crl_dir		= $dir/crl		           # 证书吊销列表
+database        = $dir/index.txt       # 数据库索引文件
+new_certs_dir   = $dir/newcerts        # 新签署的证书保存目录
+certificate     = $dir/cacert.pem         # CA证书路径名
+serial          = $dir/serial             # 当前证书序列号
+crlnumber	= $dir/crlnumber	     # 跟踪当前 CRL 的编号
+private_key     = $dir/private/cakey.pem  # CA的私钥路径名
+
+
+# 为什么有了certs还要new_certs_dir：区分是否颁发出去
+
+[ my_policy ]
+countryName = optional
+stateOrProvinceName = optional
+organizationName = optional
+organizationalUnitName = optional
+commonName = supplied
+emailAddress = optional
+
+[ my_extensions ]
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer:always
+basicConstraints = CA:TRUE
+```
+
+### 自定义配置文件 vs 默认配置文件的 OpenSSL 签署和自签署
+
+**自定义配置文件**：使用X509
+
+- 用户可以定义自己的 `openssl.cnf` 文件，设置特定路径、策略和扩展。
+- 灵活性更高，适用于自定义需求，如设定特定证书有效期、密钥长度等。
+- 需要手动创建目录结构和初始化文件。
+
+**默认配置文件**：
+
+- 使用系统自带的 `/etc/pki/tls/openssl.cnf`，减少初始配置工作量。
+- 适用于标准操作，目录结构和文件路径已经预定义。
+- 初始化较为简单，适合不需要特殊配置的环境。
 
 ## 项目实践
 
@@ -539,3 +717,24 @@ openssl rsa 专门处理RSA密钥
 - 生成证书：为新用户生成数字证书。
 - 签名：使用私钥对证书进行签名。
 - 验签：验证证书的有效性。
+
+```bash
+# 在图形化界面中进入根文件夹
+nautilus /
+
+# 删除
+rm -f /var/tmp/environment.swp
+
+#修改权限
+sudo chown -R xuan:xuan /usr/local/
+
+# 配置文件夹
+sudo vim ~/.bashrc
+
+# 查看某个变量
+echo $GOPATH
+
+# 重启
+sudo reboot
+```
+
