@@ -68,7 +68,7 @@ sudo reboot
 
 ### docker pull一直超时
 
-方法二可行(๑•̀ㅂ•́)
+方法二可行(๑•̀ㅂ•́)【超级有用，8.15又救了我一命😭😭😭😭】
 و✧：[从Docker Hub 拉取镜像一直失败超时？这些解决方案帮你解决烦恼_docker拉取镜像超时-CSDN博客](https://blog.csdn.net/weixin_50160384/article/details/139861337)
 
 ### Shell脚本执行报错 ：Synatx error: “(” unexpected (expecting “fi”)

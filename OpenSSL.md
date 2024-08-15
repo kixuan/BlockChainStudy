@@ -289,7 +289,7 @@ openssl version
    ```bash
    ```
 
-### （四）自建CA
+### （五）自建CA
 
 生成证书请求文件：把信息和公钥放进证书请求文件，进行数字签名保证请求文件完整性和一致性
 
@@ -300,13 +300,14 @@ openssl version
 1. `openssl req`：生成证书请求（CSR）或自签名证书
 
    ```bash
+   openssl genrsa -out pri_key.pem
+   
    # 生成证书请求文件
-   openssl req -new -key pri_key.pem -out req1.csr
+   openssl req -new -key pri_key.pem -out req.csr
    
    # 自签名证书  -x509
    # 使用私钥 pri_key.pem 和证书签名请求 req1.csr 生成一个有效期为 365 天的自签名证书，并将其保存到 CA1.crt
-   openssl req -x509 -key pri_key.pem -in req1.csr -out CA1.crt -days 365
-   
+   openssl req -x509 -key pri_key.pem -in req.csr -out CA1.crt -days 365
    ```
 
 ```bash
@@ -382,9 +383,11 @@ openssl version
 # 生成私钥
 openssl genrsa -out /etc/pki/CA/private/cakey.pem
 # 生成证书签名请求CSR
-openssl req -new -key /etc/pki/CA/private/cakey.pem -out rootCA.csr
+openssl req -new -key /etc/pki/CA/private/cakey.pem -out /etc/pki/CA/rootCA.csr
+
+# 
 # 自签名 CA 证书
-openssl ca -selfsign -in rootCA.csr
+openssl ca -selfsign -in /etc/pki/CA/rootCA.csr
 # 复制生成的 CA 证书（遵守openssl.cnf文件
 cp /etc/pki/CA/newcerts/01.pem /etc/pki/CA/cacert.pem
 
@@ -412,7 +415,7 @@ openssl ca -revoke /etc/pki/CA/newcerts/02.pem
 └── openssl.cnf      # OpenSSL 配置文件
 ```
 
-### **配置OpenSSL**
+### **（六）配置OpenSSL**
 
 `basicConstraints=CA:FALSE`
 
@@ -450,7 +453,7 @@ authorityKeyIdentifier = keyid,issuer:always
 basicConstraints = CA:TRUE
 ```
 
-### 自定义配置文件 vs 默认配置文件的 OpenSSL 签署和自签署
+自定义配置文件 vs 默认配置文件的 OpenSSL 签署和自签署
 
 **自定义配置文件**：使用X509
 
@@ -463,6 +466,102 @@ basicConstraints = CA:TRUE
 - 使用系统自带的 `/etc/pki/tls/openssl.cnf`，减少初始配置工作量。
 - 适用于标准操作，目录结构和文件路径已经预定义。
 - 初始化较为简单，适合不需要特殊配置的环境。
+
+### （六1/2）共享文件夹方式
+
+1.  NFS ，参考：[Ubuntu通过NFS实现文件共享（精简版）-CSDN博客](https://blog.csdn.net/qq_31278903/article/details/82944545)
+2. **虚拟化平台共享文件夹**：方便虚拟机之间的文件交换，特别是当虚拟机在同一主机上时：[主机与VMware虚拟机共享文件夹：解决虚拟机找不到共享文件夹问题 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/650638983)
+
+```bash
+# 共享端
+# 安装 NFS
+sudo apt-get install nfs-kernel-server
+# 创建用于贡献的目录 /share
+sudo mkdir -p /share
+# 修改 /share 目录的权限，使所有用户都具有读、写和执行权限（不安全，实际使用中应根据需要设置权限）
+chmod 777 /share
+# 检查是否创建成功
+ls -ld /share
+
+
+# 编辑 NFS 服务器配置文件 /etc/exports
+sudo vi /etc/exports
+/share *(rw,sync,no_subtree_check,no_root_squash)
+# 解释：
+# /share  - 共享的目录
+# *       - 允许所有主机访问
+# rw      - 允许读写权限
+# sync    - 强制 NFS 服务器在回应客户端请求之前将数据写入磁盘
+# no_subtree_check - 不检查子目录的权限
+# no_root_squash - 允许客户端以 root 用户身份访问服务器上的文件
+
+# 启动 NFS 内核服务器
+sudo /etc/init.d/nfs-kernel-server start
+# 检查 NFS 内核服务器的状态
+sudo systemctl status nfs-kernel-server
+
+# 被共享端
+sudo /etc/init.d/nfs-kernel-server start
+sudo systemctl status nfs-kernel-server
+
+# 将远程 NFS 共享目录挂载到本地目录 /media/share
+# 需要先创建挂载点 /media/share
+sudo mkdir -p /media/share
+sudo mount 172.17.0.1:/share /media/share
+
+```
+
+
+
+### （七） 不同虚拟机验签
+
+使用 OpenSSL 为现有系统实现数字证书的生成、私钥签名、验签等功能,该部分与 Hyperledger Fabric 集成，用于：
+
+- 生成证书：为新用户生成数字证书。
+- 签名：使用私钥对证书进行签名。
+- 验签：验证证书的有效性。
+
+```bash
+# 生成密钥
+openssl genrsa  -out clientB.pem
+# 生成 CSR
+openssl req -new -key clientB.pem -out clientB.csr
+
+# 把 CSR 给 A
+# A 使用CA对B的CSR进行签名
+sudo openssl ca -in /mnt/hgfs/share-1/clientB.csr -out clientB.crt 
+[== o4.pem]
+
+# 验证是否为 A 签发的证书  -- 保证信任链的建立
+# openssl verify -CAfile 01.pem clientB.crt
+sudo openssl verify -CAfile /etc/pki/CA/newcerts/01.pem /etc/pki/CA/newcerts/02.pem
+
+# 虚拟机B签署文件
+sudo openssl dgst -sha256 -sign clientB.pem -out fileB.sig fileB.txt
+sudo openssl dgst -sha256 -sign clientC.pem -out fileC.sig fileC.txt
+
+
+# 提取公钥
+sudo openssl x509 -in clientB.crt -pubkey -noout > clientB_pubkey.pem
+openssl x509 -in clientC.crt -pubkey -noout > clientC_pubkey.pem
+
+# 使用公钥验证其他虚拟机签名  -- 确保数据的实际安全
+openssl dgst -sha256 -verify clientC_pubkey.pem -signature fileC.sig fileC.txt
+openssl dgst -sha256 -verify clientB_pubkey.pem -signature fileB.sig fileB.txt
+
+# 文件夹共享失效
+sudo mount -t fuse.vmhgfs-fuse .host:/ /mnt/hgfs -o allow_other
+```
+
+在对CSR进行签名时，如果字段没有match上，会失败：
+
+![image-20240815113545454](C:/Users/%E9%86%92%E9%85%92%E5%99%A8/AppData/Roaming/Typora/typora-user-images/image-20240815113545454.png)
+
+公钥验签：只有公钥、签署文件、文件三者都相同才能验签成功：
+
+![img](https://cdn.nlark.com/yuque/0/2024/png/34538675/1723688426740-57272312-a4d6-4f80-95de-8ea466145ea0.png)
+
+
 
 ## 项目实践
 
@@ -710,13 +809,8 @@ openssl rsa 专门处理RSA密钥
 - 更新证书：修改证书信息。
 - 撤销证书：标记证书无效。
 
-### **OpenSSL 数字证书管理**
+## Linux 基本操作
 
-使用 OpenSSL 为现有系统实现数字证书的生成、私钥签名、验签等功能,该部分与 Hyperledger Fabric 集成，用于：
-
-- 生成证书：为新用户生成数字证书。
-- 签名：使用私钥对证书进行签名。
-- 验签：验证证书的有效性。
 
 ```bash
 # 在图形化界面中进入根文件夹
@@ -736,5 +830,8 @@ echo $GOPATH
 
 # 重启
 sudo reboot
+
+# 查找文件
+sudo find / -name "clientB.crt"
 ```
 
